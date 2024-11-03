@@ -7,16 +7,25 @@ ipr: trust200902
 area: Security
 
 docname: draft-pala-ocsp-range-queries
-submissiontype: independent  # also: "IETF" "independent", "editorial", "IAB", or "IRTF"
+submissiontype: IETF  # also: "IETF" "independent", "editorial", "IAB", or "IRTF"
 number: 0
 date: 2024-11-03
 v: 3
 area: SECURITY
-workgroup:
+workgroup: LAMPS
 keyword:
  - ocsp
  - pki
  - revocation
+
+venue:
+  group: WG
+  type: Working Group
+  name: LAMPS
+  mail: spams@ietf.org
+  arch: https://datatracker.ietf.org/wg/lamps/about/
+  github: opencrypto/draft-pala-ocsp-range-queries
+  latest: https://opencrypto.github.io/draft-pala-ocsp-range-queries-extension/draft-pala-ocsp-range-queries.html
 
 coding: utf-8
 pi:    # can use array (if all yes) or hash here
