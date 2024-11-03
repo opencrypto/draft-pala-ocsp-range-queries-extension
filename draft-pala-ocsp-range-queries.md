@@ -52,12 +52,12 @@ The Online Certificate Status Protocol (OCSP) provides single-certificate-revoca
 
 --- middle
 
-# Introduction {#sec-intro}
+# Introduction {#intro}
 
 The OCSP protocol serves as a method to determine the validity status of an X.509 certificate
 
 
-## Conventions and Terminology {#sec-terminology}
+## Conventions and Terminology {#terminology}
 
 {::boilerplate bcp14-tagged}
 
@@ -89,13 +89,13 @@ The following terminology is used throughout this document:
 **PKI**:
           Public Key Infrastructure, as defined in [RFC5280].
 
-# OCSP Design Issues {#sec-range}
+# OCSP Design Issues {#design}
 
 The original design for the OCSP protocol was based on a live responder model where each query would be replied to with a freshly signed new response that could be cached for the duration of the response which it was meant to be a short period of time such as few minutes to few hours. This model was meant to provide real-time revocation status for a single certificate. However, the per-certificate lookup approach employed in OCSP has proven to have performance and scalability issues. This is particularly true when the number of certificates issued by the specific CA is very large and requests for status verification are clustered around a subset of the certificates. In other words, the current design of the OCSP protocol [RFC6960] ties the number of possible responses that the OCSP responder must be able to produce is tied to the number of certificates issued, instead of the number of certificates revoked.
 
 To overcome the issue with responders' performances, certificate providers pre-compute all responses for the active certificates population and serve quite long-lived responses from CDNs, which is very expensive and an evident barrier to revocation status checking.
 
-## OCSP Range Queries {#sec-range}
+## OCSP Range Queries {#range-queries}
 
 The OCSP Range Queries extension allows OCSP responders to provide only a handful of responses, thus removing the need for large CDN deployments or the need of shortening the lifetime of certificates with the ultimate goal of removing revocation checks (which breaks the trust model used in PKIs).
 
@@ -107,7 +107,7 @@ The serial number of the CertID is set to a well-know value that the client igno
 
 The `startCertID` and `endCertID` values are the first and last certificate serial numbers for which the response is valid (inclusive). If the `startCertID` is not present, the default value to use is 0. If the `endCertID` is not present, the default value to use is +Infinite (meaning the largest value supported).
 
-## The OCSP Range Queries Extension {#sec-range}
+## The OCSP Range Queries Extension {#range-queries-extension}
 
 When an OCSP client supports OCSP range responses, the client MUST include the `OCSPRangeResponse` extension with the value set to `NULL`. OCSP clients that do not support range queries SHALL NOT include the `OCSPRangeResponse` extension. The extension is defined as follows:
 
@@ -118,7 +118,7 @@ When an OCSP client supports OCSP range responses, the client MUST include the `
    OCSPRangeResponse ::= NULL
 ```
 
-## The OCSPRange Extension {#sec-range}
+## The OCSPRange Extension {#ocsp-range}
 
 When an OCSP client includes the `OCSPRangeResponse` extension in the OCSP request message, the responder MUST include the `OCSPRange` extension in the OCSP response message. The `OCSPRange` extension allows a responder to indicate the range of responses for which the response is valid. The extension is defined as follows:
 
