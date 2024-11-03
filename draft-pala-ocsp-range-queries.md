@@ -1,5 +1,4 @@
 ---
-
 title: "Range Queries Extension for OCSP"
 abbrev: "OCSP Range Queries"
 category: standard
@@ -9,12 +8,11 @@ area: Security
 
 docname: draft-pala-ocsp-range-queries
 submissiontype: independent  # also: "IETF" "independent", "editorial", "IAB", or "IRTF"
-number:
-date:
-consensus: true
+number: 0
+date: 2024-11-03
 v: 3
 area: SECURITY
-workgroup: LAMPS Working Group
+workgroup:
 keyword:
  - ocsp
  - pki
@@ -100,7 +98,7 @@ To overcome the issue with responders' performances, certificate providers pre-c
 
 The OCSP Range Queries extension allows OCSP responders to provide only a handful of responses, thus removing the need for large CDN deployments or the need of shortening the lifetime of certificates with the ultimate goal of removing revocation checks (which breaks the trust model used in PKIs).
 
-When the OCSP Range Query extension (i.e., `OCSPRangeQuery`) is provided in the OCSP request, the client indicates that they support range queries. In this case, if the responder does not provide support for range queries or the status associated with the requested serial number is `revoked`, the responder replies with a standard OCSP response that the client processes as usual. 
+When the OCSP Range Query extension (i.e., `OCSPRangeQuery`) is provided in the OCSP request, the client indicates that they support range queries. In this case, if the responder does not provide support for range queries or the status associated with the requested serial number is `revoked`, the responder replies with a standard OCSP response that the client processes as usual.
 
 However, when the responder supports range queries and the requested serial number is not revoked, the responder will reply with an OCSP response that carries the `OCSPRangeResponse` extension that specifies the range of certificates for which the response is valid.
 
@@ -250,11 +248,11 @@ For example, for a CA with an active population of 10,000,000 certificates and a
 
 For high-performance OCSP responders, the pre-computation of responses for the ranges of certificates is a viable solution that can optimize the performances of responders: by reducing the number of responses that need to be generated, the responder can produce the responses in few seconds every few minutes/hours and directly serve them from memory or cache.
 
-# Security Considerations
+# Security Considerations {#sec-considerations}
 
 The OCSP Range Queries extension does not introduce any new security considerations beyond those already present in the OCSP protocol.
 
-# IANA Considerations
+# IANA Considerations {#iana-considerations}
 
 This document has no IANA actions.
 
@@ -318,3 +316,4 @@ END
 {:numbered="false"}
 
 TODO examples.
+
