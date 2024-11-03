@@ -41,6 +41,7 @@ author:
 
 normative:
   RFC6960:
+  RFC5280:
 
 informative:
 
@@ -83,14 +84,14 @@ The following terminology is used throughout this document:
           Certificate Authority.
 
 **DER**:
-          Distinguished Encoding Rules as defined in [X.690].
+          Distinguished Encoding Rules as defined in X.690.
 
 **PKI**:
           Public Key Infrastructure, as defined in [RFC5280].
 
 # OCSP Design Issues {#sec-range}
 
-The original design for the OCSP protocol was based on a live responder model where each query would be replied to with a freshly signed new response that could be cached for the duration of the response which it was meant to be a short period of time such as few minutes to few hours. This model was meant to provide real-time revocation status for a single certificate. However, the per-certificate lookup approach employed in OCSP has proven to have performance and scalability issues. This is particularly true when the number of certificates issued by the specific CA is very large and requests for status verification are clustered around a subset of the certificates. In other words, the current design of the OCSP protocol ties the number of possible responses that the OCSP responder must be able to produce is tied to the number of certificates issued, instead of the number of certificates revoked.
+The original design for the OCSP protocol was based on a live responder model where each query would be replied to with a freshly signed new response that could be cached for the duration of the response which it was meant to be a short period of time such as few minutes to few hours. This model was meant to provide real-time revocation status for a single certificate. However, the per-certificate lookup approach employed in OCSP has proven to have performance and scalability issues. This is particularly true when the number of certificates issued by the specific CA is very large and requests for status verification are clustered around a subset of the certificates. In other words, the current design of the OCSP protocol [RFC6960] ties the number of possible responses that the OCSP responder must be able to produce is tied to the number of certificates issued, instead of the number of certificates revoked.
 
 To overcome the issue with responders' performances, certificate providers pre-compute all responses for the active certificates population and serve quite long-lived responses from CDNs, which is very expensive and an evident barrier to revocation status checking.
 
