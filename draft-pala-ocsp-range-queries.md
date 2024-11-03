@@ -7,7 +7,7 @@ category: standard
 ipr: trust200902
 area: Security
 
-docname: draft-pala-ocsp-range-extension
+docname: draft-pala-ocsp-range-queries
 submissiontype: independent  # also: "IETF" "independent", "editorial", "IAB", or "IRTF"
 number:
 date:
