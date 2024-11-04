@@ -156,8 +156,6 @@ The OCSP Range extension modifies the OCSP protocol by providing a mechanism to 
 
 This document has no IANA actions.
 
---- back
-
 # ASN.1 Module
 
 ~~~ ASN.1
@@ -213,6 +211,9 @@ END
 
 <CODE ENDS>
 ~~~
+{: #asn1-module title="ASN.1 Module for OCSP Range Responses"}
+
+--- back
 
 # OCSP Requests and Responses Processing {#back-ocsp-processing}
 
