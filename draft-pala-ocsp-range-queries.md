@@ -7,7 +7,7 @@ ipr: trust200902
 area: Security
 
 docname: draft-pala-ocsp-range-queries
-submissiontype: IETF  # also: "IETF" "independent", "editorial", "IAB", or "IRTF"
+submissiontype: std  # also: "IETF" "independent", "editorial", "IAB", or "IRTF"
 number: 0
 date: 2024-11-03
 v: 3
