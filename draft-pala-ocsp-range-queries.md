@@ -5,27 +5,29 @@ category: standard
 
 ipr: trust200902
 area: Security
+cat: std
 
 docname: draft-pala-ocsp-range-queries
 submissiontype: std  # also: "IETF" "independent", "editorial", "IAB", or "IRTF"
-number: 0
-date: 2024-11-03
-v: 3
-area: SECURITY
-workgroup: LAMPS
-keyword:
- - ocsp
- - pki
- - revocation
+# number: 0
+# date: 2024-11-03
+# v: 3
+# area: SECURITY
+# # workgroup: LAMPS
+# keyword:
+#  - ocsp
+#  - pki
+#  - revocation
+consensus: true
 
-venue:
-  group: WG
-  type: Working Group
-  name: LAMPS
-  mail: spams@ietf.org
-  arch: https://datatracker.ietf.org/wg/lamps/about/
-  github: opencrypto/draft-pala-ocsp-range-queries
-  latest: https://opencrypto.github.io/draft-pala-ocsp-range-queries-extension/draft-pala-ocsp-range-queries.html
+# venue:
+#   group: WG
+#   type: Working Group
+#   name: LAMPS
+#   mail: spams@ietf.org
+#   arch: https://datatracker.ietf.org/wg/lamps/about/
+#   github: opencrypto/draft-pala-ocsp-range-queries
+#   latest: https://opencrypto.github.io/draft-pala-ocsp-range-queries-extension/draft-pala-ocsp-range-queries.html
 
 coding: utf-8
 pi:    # can use array (if all yes) or hash here
@@ -44,8 +46,11 @@ pi:    # can use array (if all yes) or hash here
 
 author:
  -
-    fullname: Massimiliano Pala
-    organization: OpenCA Labs
+    ins: M. Pala
+    name: Massimiliano Pala
+    org: OpenCA Labs
+    city: New York City, New York
+    country: United States of America
     email: director@openca.org
 
 normative:
@@ -120,18 +125,18 @@ The `startCertID` and `endCertID` values are the first and last certificate seri
 
 When an OCSP client supports OCSP range responses, the client MUST include the `OCSPRangeResponse` extension with the value set to `NULL`. OCSP clients that do not support range queries SHALL NOT include the `OCSPRangeResponse` extension. The extension is defined as follows:
 
-```asn.1
+~~~asn.1
 
    id-range-response OBJECT IDENTIFIER ::= { id-pkix-ocsp 10 }
 
    OCSPRangeResponse ::= NULL
-```
+~~~
 
 ## The OCSPRange Extension {#ocsp-range}
 
 When an OCSP client includes the `OCSPRangeResponse` extension in the OCSP request message, the responder MUST include the `OCSPRange` extension in the OCSP response message. The `OCSPRange` extension allows a responder to indicate the range of responses for which the response is valid. The extension is defined as follows:
 
-```asn.1
+~~~asn.1
 
    id-ocsp-range-response OBJECT IDENTIFIER ::= { id-pkix-ocsp 11 }
 
@@ -147,8 +152,10 @@ When an OCSP client includes the `OCSPRangeResponse` extension in the OCSP reque
                                 --- which the response is valid. If the value
                                 --- is not present, the default value to use
                                 --- is +Infinite.
-   }
-```
+   \}
+~~~
+{: #asn1-ocsp-range title="The OCSP Range Extension ASN.1 Definition"}
+
 Where the `startCertID` and `endCertID` values are the first and last certificate serial numbers for which the response is valid (inclusive). If the `startCertID` is not present, the default value to use is 0. If the `endCertID` is not present, the default value to use is +Infinite (meaning the largest value supported).
 
 # OCSP Requests and Responses Processing {#sec-changes}
@@ -159,7 +166,7 @@ This section is meant to provide indications for implementers about how to prope
 
 When an OCSP client sends a request to an OCSP responder and includes the `OCSPRangeResponse` extension, the responder builds the response to bew sent to the client according to the following algorithm:
 
-```plaintext
+~~~
 IF OCSPRangeResponse extension is present in the request THEN
     IF OCSPRangeResponse extension is supported by the responder THEN
         IF the requested serial number is not revoked THEN
@@ -175,7 +182,8 @@ IF OCSPRangeResponse extension is present in the request THEN
 ELSE
     Send the standard OCSP response for the revoked certificate
 END IF
-```
+~~~
+{: #alg-ocsp-responder title="OCSP Responder Processing Algorithm"}
 
 When a responder does not support the `OCSPRangeResponse` extension, the responder SHALL ignore it and respond with a standard OCSP response that the client processes as usual.
 
@@ -183,7 +191,7 @@ When a responder does not support the `OCSPRangeResponse` extension, the respond
 
 When an OCSP client receives a response from an OCSP responder, the client processes the response according to the following algorithm:
 
-```plaintext
+~~~
 IF OCSPRange extension is present in the response THEN
 
     1. Ignore the serial number used in the CertID and Use the startCertID
@@ -196,7 +204,8 @@ ELSE
     1. Process the response as usual
 
 END IF
-```
+~~~
+{: #alg-ocsp-client title="OCSP Client Processing Algorithm"}
 
 ## Pre-Computation of OCSP Responses {#sec-precompute}
 
@@ -204,7 +213,7 @@ To optimize the performance of the OCSP responder, the responder MAY pre-compute
 
 For example, when the population of active certificates is 1,000,000 (1,000 of which are revoked), the responder, instead of pre-computing 1,000,000 responses, only pre-computes the responses for the ranges of certificates that share the same status (revoked or valid) according to the following algorithm:
 
-```plaintext
+~~~
 # Load the current CRL
 aCRL :== Load(CRL)
 
@@ -252,7 +261,8 @@ FOREACH aEntry in the aCRL DO
             aStatus :== REVOKED
         END IF
     END IF
-```
+~~~
+{: #alg-precompute title="Algorithm for Pre-Computation of OCSP Responses"}
 
 For example, for a CA with an active population of 10,000,000 certificates and a revoked population of 1,000 certificates, the responder will generate one response for the range of serial numbers from 0 to the first revoked certificate, one response for each range of certificates with the same status (revoked or valid), and one response for the range of serial numbers from the last revoked certificate to the largest serial number supported (i.e., +Infinite). In case all 1,000 revocation entries are not contiguous, the responder will generate 1,002 responses instead of 10,000,000 responses.
 
@@ -277,7 +287,7 @@ TODO acknowledge.
 # Appendix A. ASN.1 Module
 {:numbered="false"}
 
-```asn.1
+~~~
 
 OCSPRangeResponseExtension-2009
     {iso(1) identified-organization(3) dod(6) internet(1) security(5)
@@ -319,8 +329,7 @@ OCSPRange ::= SEQUENCE {
 }
 
 END
-
-```
+~~~
 
 # Appendix B. Examples
 {:numbered="false"}
