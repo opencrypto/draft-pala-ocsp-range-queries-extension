@@ -1,5 +1,5 @@
 ---
-title: "OCSP Range Extension"
+title: "OCSP Range Responses"
 abbrev: "OCSP Range Responses"
 docname: draft-pala-ocsp-range-responses-latest
 
