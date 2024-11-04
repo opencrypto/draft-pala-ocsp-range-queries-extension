@@ -68,10 +68,9 @@ Table of Contents
 
    1.  Introduction
      1.1.  Conventions and Terminology
-   2.  OCSP Design Issues
-     2.1.  OCSP Range Queries
-     2.2.  The OCSP Range Queries Extension
-     2.3.  The OCSPRange Extension
+   2.  OCSP Range Queries
+     2.1.  The OCSP Range Queries Extension
+     2.2.  The OCSPRange Extension
    3.  OCSP Requests and Responses Processing
      3.1.  Processing OCSP Requests
      3.2.  Processing OCSP Responses
@@ -86,8 +85,25 @@ Table of Contents
 
 1.  Introduction
 
-   The OCSP protocol serves as a method to determine the validity status
-   of an X.509 certificate
+   The original design for the OCSP protocol was based on a live
+   responder model where each query would be replied to with a freshly
+   signed new response that could be cached for the duration of the
+   response which it was meant to be a short period of time such as few
+   minutes to few hours.  This model was meant to provide real-time
+   revocation status for a single certificate.  However, the per-
+   certificate lookup approach employed in OCSP has proven to have
+   performance and scalability issues.  This is particularly true when
+   the number of certificates issued by the specific CA is very large
+   and requests for status verification are clustered around a subset of
+   the certificates.  In other words, the current design of the OCSP
+   protocol [RFC6960] ties the number of possible responses that the
+   OCSP responder must be able to produce is tied to the number of
+   certificates issued, instead of the number of certificates revoked.
+
+   To overcome the issue with responders' performances, certificate
+   providers pre-compute all responses for the active certificates
+   population and serve quite long-lived responses from CDNs, which is
+   very expensive and an evident barrier to revocation status checking.
 
 1.1.  Conventions and Terminology
 
@@ -117,29 +133,7 @@ Table of Contents
 
    *PKI*: Public Key Infrastructure, as defined in [RFC5280].
 
-2.  OCSP Design Issues
-
-   The original design for the OCSP protocol was based on a live
-   responder model where each query would be replied to with a freshly
-   signed new response that could be cached for the duration of the
-   response which it was meant to be a short period of time such as few
-   minutes to few hours.  This model was meant to provide real-time
-   revocation status for a single certificate.  However, the per-
-   certificate lookup approach employed in OCSP has proven to have
-   performance and scalability issues.  This is particularly true when
-   the number of certificates issued by the specific CA is very large
-   and requests for status verification are clustered around a subset of
-   the certificates.  In other words, the current design of the OCSP
-   protocol [RFC6960] ties the number of possible responses that the
-   OCSP responder must be able to produce is tied to the number of
-   certificates issued, instead of the number of certificates revoked.
-
-   To overcome the issue with responders' performances, certificate
-   providers pre-compute all responses for the active certificates
-   population and serve quite long-lived responses from CDNs, which is
-   very expensive and an evident barrier to revocation status checking.
-
-2.1.  OCSP Range Queries
+2.  OCSP Range Queries
 
    The OCSP Range Queries extension allows OCSP responders to provide
    only a handful of responses, thus removing the need for large CDN
@@ -171,7 +165,7 @@ Table of Contents
    use is 0.  If the endCertID is not present, the default value to use
    is +Infinite (meaning the largest value supported).
 
-2.2.  The OCSP Range Queries Extension
+2.1.  The OCSP Range Queries Extension
 
    When an OCSP client supports OCSP range responses, the client MUST
    include the OCSPRangeResponse extension with the value set to NULL.
@@ -182,7 +176,9 @@ Table of Contents
 
       OCSPRangeResponse ::= NULL
 
-2.3.  The OCSPRange Extension
+        Figure 1: The OCSP Range Response Extension ASN.1 Definition
+
+2.2.  The OCSPRange Extension
 
    When an OCSP client includes the OCSPRangeResponse extension in the
    OCSP request message, the responder MUST include the OCSPRange
@@ -206,7 +202,7 @@ Table of Contents
                                    --- is +Infinite.
       }
 
-            Figure 1: The OCSP Range Extension ASN.1 Definition
+            Figure 2: The OCSP Range Extension ASN.1 Definition
 
    Where the startCertID and endCertID values are the first and last
    certificate serial numbers for which the response is valid
@@ -242,7 +238,7 @@ ELSE
     Send the standard OCSP response for the revoked certificate
 END IF
 
-            Figure 2: OCSP Responder Processing Algorithm
+            Figure 3: OCSP Responder Processing Algorithm
 
    When a responder does not support the OCSPRangeResponse extension,
    the responder SHALL ignore it and respond with a standard OCSP
@@ -266,7 +262,7 @@ ELSE
 
 END IF
 
-              Figure 3: OCSP Client Processing Algorithm
+              Figure 4: OCSP Client Processing Algorithm
 
 3.3.  Pre-Computation of OCSP Responses
 
@@ -329,7 +325,7 @@ END IF
            END IF
        END IF
 
-         Figure 4: Algorithm for Pre-Computation of OCSP Responses
+         Figure 5: Algorithm for Pre-Computation of OCSP Responses
 
    For example, for a CA with an active population of 10,000,000
    certificates and a revoked population of 1,000 certificates, the
