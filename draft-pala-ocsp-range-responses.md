@@ -156,7 +156,7 @@ The OCSP Range extension modifies the OCSP protocol by providing a mechanism to 
 
 This document has no IANA actions.
 
-# ASN.1 Module
+# ASN.1 Module {#asn1-module-section}
 
 ~~~ ASN.1
 
@@ -211,7 +211,7 @@ END
 
 <CODE ENDS>
 ~~~
-{: #asn1-module title="ASN.1 Module for OCSP Range Responses"}
+{: #asn1-module title="ASN.1 Module"}
 
 --- back
 
@@ -276,10 +276,10 @@ Notice that compliant clients SHALL process the OCSPRange extension even if they
 To optimize the performance of the OCSP responder, the responder MAY pre-compute the responses for the ranges of active certificates population and serve them directly from memory or cache. The number of pre-computed responses includes one for each revoked certificate or range of revoked certificates plus one for each of valid certificates. An example algorithm is provided for the implementers where the responder uses the `aCRL` to lookup the list of revoked certificates (sorted) and the `Responses` array to store the pre-computed responses (sorted).
 
 ~~~ code
-aStatus :== VALID;
-aRangeStart :== 0;
-aRangeEnd :== 0;
-idx :== 0;
+aStatus <-- VALID
+aRangeStart <-- 0
+aRangeEnd <-- 0
+idx :== 0
 
 # Process the CRL entries
 FOR EACH aEntry in aCRL.entries DO
@@ -287,12 +287,13 @@ FOR EACH aEntry in aCRL.entries DO
     # Check the status of the current range
     IF aStatus == VALID THEN
         # We are in a range of valid certificates
-        aRangeEnd :== aEntry.serial - 1
-        Responses(idx++) = Valid{aRangeStart, aRangeEnd}
+        aRangeEnd <-- aEntry.serial - 1
+        Responses(idx++) <-- Valid{aRangeStart, aRangeEnd}
 
         # Start for the next set of revoked certificates
-        aRangeStart :== aRangeEnd :== aEntry.serial
-        aStatus :== REVOKED
+        aRangeEnd <-- aEntry.serial
+        aRangeStart <-- aRangeEnd
+        aStatus <-- REVOKED
 
         # Skip to the next entry
         CONTINUE
@@ -304,16 +305,17 @@ FOR EACH aEntry in aCRL.entries DO
             CONTINUE
         ELSE
             # Generate "REVOKED" response for the previouse range
-            Responses(idx++)=Revoked{aRangeStart, aRangeEnd}
+            Responses(idx++) <-- Revoked{aRangeStart, aRangeEnd}
 
             # Sets the "VALID" response for the current range
-            aRangeStart :== aRangeEnd + 1
-            aRangeEnd :== aEntry.serial - 1
-            Responses(idx++) :== Valid{aRangeStart, aRangeEnd}
+            aRangeStart <-- aRangeEnd + 1
+            aRangeEnd <-- aEntry.serial - 1
+            Responses(idx++) <-- Valid{aRangeStart, aRangeEnd}
 
             # Prepare for the next range of revoked entries
-            aRangeStart :== aRangeEnd :== aEntry.serial
-            aStatus :== REVOKED
+            aRangeEnd <-- aEntry.serial
+            aRangeStart <-- aRangeEnd
+            aStatus <-- REVOKED
         END IF
     END IF
 ~~~
