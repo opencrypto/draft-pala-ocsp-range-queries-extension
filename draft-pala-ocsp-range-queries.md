@@ -4,7 +4,7 @@ abbrev: "OCSP Range Queries"
 docname: draft-pala-ocsp-range-queries-latest
 
 ipr: trust200902
-# area: Security
+area: Security
 cat: std
 
 coding: utf-8
@@ -94,7 +94,7 @@ The `startCertID` and `endCertID` values are the first and last certificate seri
 
 When an OCSP client supports OCSP range responses, the client MUST include the `OCSPRangeResponse` extension with the value set to `NULL`. OCSP clients that do not support range queries SHALL NOT include the `OCSPRangeResponse` extension. The extension is defined as follows:
 
-~~~asn.1
+~~~ ASN.1
 
    id-range-response OBJECT IDENTIFIER ::= { id-pkix-ocsp 10 }
 
@@ -121,7 +121,7 @@ When an OCSP client includes the `OCSPRangeResponse` extension in the OCSP reque
                                 --- which the response is valid. If the value
                                 --- is not present, the default value to use
                                 --- is +Infinite.
-   \}
+   }
 ~~~
 {: #asn1-ocsp-range title="The OCSP Range Extension ASN.1 Definition"}
 
