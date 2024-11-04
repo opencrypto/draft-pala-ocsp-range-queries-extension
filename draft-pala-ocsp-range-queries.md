@@ -1,48 +1,17 @@
 ---
 title: "Range Queries Extension for OCSP"
 abbrev: "OCSP Range Queries"
-category: standard
+docname: draft-pala-ocsp-range-queries
 
 ipr: trust200902
 area: Security
 cat: std
 
-docname: draft-pala-ocsp-range-queries
-submissiontype: std  # also: "IETF" "independent", "editorial", "IAB", or "IRTF"
-# number: 0
-# date: 2024-11-03
-# v: 3
-# area: SECURITY
-# # workgroup: LAMPS
-# keyword:
-#  - ocsp
-#  - pki
-#  - revocation
-consensus: true
-
-# venue:
-#   group: WG
-#   type: Working Group
-#   name: LAMPS
-#   mail: spams@ietf.org
-#   arch: https://datatracker.ietf.org/wg/lamps/about/
-#   github: opencrypto/draft-pala-ocsp-range-queries
-#   latest: https://opencrypto.github.io/draft-pala-ocsp-range-queries-extension/draft-pala-ocsp-range-queries.html
-
 coding: utf-8
-pi:    # can use array (if all yes) or hash here
+pi:
   toc: yes
-  sortrefs:   # defaults to yes
+  sortrefs: yes
   symrefs: yes
-
-# venue:
-#   group: WG
-#   type: Working Group
-#   mail: WG@example.com
-#   arch: https://example.com/WG
-#   github: USER/REPO
-#   latest: https://example.com/LATEST
-
 
 author:
  -
