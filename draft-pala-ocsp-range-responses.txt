@@ -8,7 +8,7 @@ Intended status: Standards Track                         4 November 2024
 Expires: 8 May 2025
 
 
-                          OCSP Range Extension
+                          OCSP Range Responses
                  draft-pala-ocsp-range-responses-latest
 
 Abstract
