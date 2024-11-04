@@ -1,7 +1,7 @@
 ---
 title: "Range Queries Extension for OCSP"
 abbrev: "OCSP Range Queries"
-docname: draft-pala-ocsp-range-queries
+docname: draft-pala-ocsp-range-queries-latest
 
 ipr: trust200902
 area: Security
