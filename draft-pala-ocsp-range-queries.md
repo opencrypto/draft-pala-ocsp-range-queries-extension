@@ -4,7 +4,7 @@ abbrev: "OCSP Range Queries"
 docname: draft-pala-ocsp-range-queries-latest
 
 ipr: trust200902
-area: Security
+# area: Security
 cat: std
 
 coding: utf-8
