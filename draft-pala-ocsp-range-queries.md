@@ -37,8 +37,9 @@ The Online Certificate Status Protocol (OCSP) provides single-certificate-revoca
 
 # Introduction {#intro}
 
-The OCSP protocol serves as a method to determine the validity status of an X.509 certificate
+The original design for the OCSP protocol was based on a live responder model where each query would be replied to with a freshly signed new response that could be cached for the duration of the response which it was meant to be a short period of time such as few minutes to few hours. This model was meant to provide real-time revocation status for a single certificate. However, the per-certificate lookup approach employed in OCSP has proven to have performance and scalability issues. This is particularly true when the number of certificates issued by the specific CA is very large and requests for status verification are clustered around a subset of the certificates. In other words, the current design of the OCSP protocol [RFC6960] ties the number of possible responses that the OCSP responder must be able to produce is tied to the number of certificates issued, instead of the number of certificates revoked.
 
+To overcome the issue with responders' performances, certificate providers pre-compute all responses for the active certificates population and serve quite long-lived responses from CDNs, which is very expensive and an evident barrier to revocation status checking.
 
 ## Conventions and Terminology {#terminology}
 
@@ -72,13 +73,7 @@ The following terminology is used throughout this document:
 **PKI**:
           Public Key Infrastructure, as defined in [RFC5280].
 
-# OCSP Design Issues {#design}
-
-The original design for the OCSP protocol was based on a live responder model where each query would be replied to with a freshly signed new response that could be cached for the duration of the response which it was meant to be a short period of time such as few minutes to few hours. This model was meant to provide real-time revocation status for a single certificate. However, the per-certificate lookup approach employed in OCSP has proven to have performance and scalability issues. This is particularly true when the number of certificates issued by the specific CA is very large and requests for status verification are clustered around a subset of the certificates. In other words, the current design of the OCSP protocol [RFC6960] ties the number of possible responses that the OCSP responder must be able to produce is tied to the number of certificates issued, instead of the number of certificates revoked.
-
-To overcome the issue with responders' performances, certificate providers pre-compute all responses for the active certificates population and serve quite long-lived responses from CDNs, which is very expensive and an evident barrier to revocation status checking.
-
-## OCSP Range Queries {#range-queries}
+# OCSP Range Queries {#range-queries}
 
 The OCSP Range Queries extension allows OCSP responders to provide only a handful of responses, thus removing the need for large CDN deployments or the need of shortening the lifetime of certificates with the ultimate goal of removing revocation checks (which breaks the trust model used in PKIs).
 
@@ -100,12 +95,13 @@ When an OCSP client supports OCSP range responses, the client MUST include the `
 
    OCSPRangeResponse ::= NULL
 ~~~
+{: #asn1-ocsp-range-response title="The OCSP Range Response Extension ASN.1 Definition"}
 
 ## The OCSPRange Extension {#ocsp-range}
 
 When an OCSP client includes the `OCSPRangeResponse` extension in the OCSP request message, the responder MUST include the `OCSPRange` extension in the OCSP response message. The `OCSPRange` extension allows a responder to indicate the range of responses for which the response is valid. The extension is defined as follows:
 
-~~~asn.1
+~~~ ASN.1
 
    id-ocsp-range-response OBJECT IDENTIFIER ::= { id-pkix-ocsp 11 }
 
