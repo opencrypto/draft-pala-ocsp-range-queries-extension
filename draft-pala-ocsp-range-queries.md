@@ -75,15 +75,15 @@ The following terminology is used throughout this document:
 
 # OCSP Range Queries {#range-queries}
 
-The OCSP Range Queries extension allows OCSP responders to provide only a handful of responses, thus removing the need for large CDN deployments or the need of shortening the lifetime of certificates with the ultimate goal of removing revocation checks (which breaks the trust model used in PKIs).
+The OCSP Range Queries extension allows OCSP responders to provide only a handful of responses, thus removing the need for large CDN deployments or the need of shortening the lifetime of certificates.
 
-When the OCSP Range Query extension (i.e., `OCSPRangeQuery`) is provided in the OCSP request, the client indicates that they support range queries. In this case, if the responder does not provide support for range queries or the status associated with the requested serial number is `revoked`, the responder replies with a standard OCSP response that the client processes as usual.
+When the OCSP Range Query extension (i.e., `OCSPRangeQuery`) is provided in the OCSP request, the client indicates that they support range queries. In this case, if the responder does not provide support for range queries, the responder replies with a standard OCSP response that the client processes as usual.
 
-However, when the responder supports range queries and the requested serial number is not revoked, the responder will reply with an OCSP response that carries the `OCSPRangeResponse` extension that specifies the range of certificates for which the response is valid.
+However, when the responder supports range queries, the responder SHALL reply with an OCSP response that carries the `OCSPRangeResponse` extension that specifies the range of certificates for which the response is valid.
 
 The serial number of the CertID is set to a well-know value that the client ignores when the `OCSPRangeResponse` extension is present in the response. The client will then use the `startCertID` and `endCertID` values to determine the range of certificates for which the response is valid.
 
-The `startCertID` and `endCertID` values are the first and last certificate serial numbers for which the response is valid (inclusive). If the `startCertID` is not present, the default value to use is 0. If the `endCertID` is not present, the default value to use is +Infinite (meaning the largest value supported).
+The `startCertID` and `endCertID` values are the first and last certificate serial numbers for which the response is valid (inclusive). The minimum value for the `startCertID` is zero (0). If the `endCertID` is not present, the value to use for the end of the range is `+Infinite` (meaning the largest value supported).
 
 ## The OCSP Range Queries Extension {#range-queries-extension}
 
@@ -106,22 +106,21 @@ When an OCSP client includes the `OCSPRangeResponse` extension in the OCSP reque
    id-ocsp-range-response OBJECT IDENTIFIER ::= { id-pkix-ocsp 11 }
 
    OCSPRange ::= SEQUENCE {
-       startCertID  [0]     INTEGER OPTIONAL,
-                                --- Beginning of the range of certificates
-                                --- for which the response is valid. If the
-                                --- value is not present, the default value
-                                --- to use is 0.
+       startCertID  [0]     INTEGER,
+            --- Beginning of the range of certificates
+            --- for which the response is valid. The
+            --- lowest value is 0.
 
        endCertID    [1]     INTEGER OPTIONAL
-                                --- End of the range of certificates for
-                                --- which the response is valid. If the value
-                                --- is not present, the default value to use
-                                --- is +Infinite.
+            --- End of the range of certificates for
+            --- which the response is valid. If the value
+            --- is not present, the default value to use
+            --- is +Infinite.
    }
 ~~~
 {: #asn1-ocsp-range title="The OCSP Range Extension ASN.1 Definition"}
 
-Where the `startCertID` and `endCertID` values are the first and last certificate serial numbers for which the response is valid (inclusive). If the `startCertID` is not present, the default value to use is 0. If the `endCertID` is not present, the default value to use is +Infinite (meaning the largest value supported).
+Where the `startCertID` and `endCertID` values are the first and last certificate serial numbers for which the response is valid (inclusive). If the `endCertID` is not present, the default value to use is +Infinite (meaning the largest value supported).
 
 # OCSP Requests and Responses Processing {#sec-changes}
 
