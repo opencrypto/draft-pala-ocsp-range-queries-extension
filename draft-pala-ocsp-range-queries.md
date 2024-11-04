@@ -284,55 +284,55 @@ This document has no IANA actions.
 
 TODO acknowledge.
 
-# Appendix A. ASN.1 Module
-{:numbered="false"}
+# # Appendix A. ASN.1 Module
+# {:numbered="false"}
 
-~~~
+# ~~~
 
-OCSPRangeResponseExtension-2009
-    {iso(1) identified-organization(3) dod(6) internet(1) security(5)
-    mechanisms(5) pkix(7) id-mod(0) id-mod-ocsp-range-response-2009(10)}
+# OCSPRangeResponseExtension-2009
+#     {iso(1) identified-organization(3) dod(6) internet(1) security(5)
+#     mechanisms(5) pkix(7) id-mod(0) id-mod-ocsp-range-response-2009(10)}
 
-DEFINITIONS IMPLICIT TAGS ::=
-BEGIN
+# DEFINITIONS IMPLICIT TAGS ::=
+# BEGIN
 
--- EXPORTS All --
+# -- EXPORTS All --
 
-IMPORTS
-    FROM PKIX1Explicit88 { iso(1) identified-organization(3) dod(6)
-        internet(1) security(5) mechanisms(5) pkix(7) id-mod(0)
-        id-pkix1-explicit-88(1) };
+# IMPORTS
+#     FROM PKIX1Explicit88 { iso(1) identified-organization(3) dod(6)
+#         internet(1) security(5) mechanisms(5) pkix(7) id-mod(0)
+#         id-pkix1-explicit-88(1) };
 
-    id-pkix-ocsp OBJECT IDENTIFIER ::= { iso(1) identified-organization(3)
-        dod(6) internet(1) security(5) mechanisms(5) pkix(7) id-mod(0)
-        id-pkix1-explicit-88(1) 1 }
+#     id-pkix-ocsp OBJECT IDENTIFIER ::= { iso(1) identified-organization(3)
+#         dod(6) internet(1) security(5) mechanisms(5) pkix(7) id-mod(0)
+#         id-pkix1-explicit-88(1) 1 }
 
--- OCSP Range Response Extension
+# -- OCSP Range Response Extension
 
-id-pkix-ocsp-range-response OBJECT IDENTIFIER ::= { id-pkix-ocsp 10 }
-id-ocsp-range-response OBJECT IDENTIFIER ::= { id-pkix-ocsp 11 }
+# id-pkix-ocsp-range-response OBJECT IDENTIFIER ::= { id-pkix-ocsp 10 }
+# id-ocsp-range-response OBJECT IDENTIFIER ::= { id-pkix-ocsp 11 }
 
-OCSPRangeResponse ::= NULL
+# OCSPRangeResponse ::= NULL
 
-OCSPRange ::= SEQUENCE {
-    startCertID  [0]     INTEGER OPTIONAL,
-                            --- Beginning of the range of certificates
-                            --- for which the response is valid. If the
-                            --- value is not present, the default value
-                            --- to use is 0.
+# OCSPRange ::= SEQUENCE {
+#     startCertID  [0]     INTEGER OPTIONAL,
+#                             --- Beginning of the range of certificates
+#                             --- for which the response is valid. If the
+#                             --- value is not present, the default value
+#                             --- to use is 0.
 
-    endCertID    [1]     INTEGER OPTIONAL
-                            --- End of the range of certificates for
-                            --- which the response is valid. If the value
-                            --- is not present, the default value to use
-                            --- is +Infinite.
-}
+#     endCertID    [1]     INTEGER OPTIONAL
+#                             --- End of the range of certificates for
+#                             --- which the response is valid. If the value
+#                             --- is not present, the default value to use
+#                             --- is +Infinite.
+# }
 
-END
-~~~
+# END
+# ~~~
 
-# Appendix B. Examples
-{:numbered="false"}
+# # Appendix B. Examples
+# {:numbered="false"}
 
-TODO examples.
+# TODO examples.
 
