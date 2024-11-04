@@ -4,13 +4,14 @@
 <meta charset="utf-8">
 <meta content="Common,Latin" name="scripts">
 <meta content="initial-scale=1.0" name="viewport">
-<title>Range Queries Extension for OCSP</title>
+<title>OCSP Range Extension</title>
 <meta content="Massimiliano Pala" name="author">
 <meta content="
-       The Online Certificate Status Protocol (OCSP) provides single-certificate-revocation status in real-time. However, the per-certificate lookup approach employed in OCSP has performance and scalability issues when faced with large population of active certificates. This document describes a new extension and associated processing rules for OCSP message to support optimized range-based responses. Specifically, when requested by the client, the returned response is modified to cover a range of certificates with the same status, instead of only the one requested, thus correlating the number of signed responses to the population of revoked certificates instead of the active certificates one. 
+       The Online Certificate Status Protocol (OCSP) provides single-certificate-revocation status, originally designed to be provided in real-time. However, the per-certificate lookup approach employed in OCSP has performance and scalability issues when faced with large population of active certificates and clients. 
+       This document describes a new extension and associated processing rules for OCSP messages that implement range-based responses. Specifically, the generated responses are modified to provide the status for a range of certificates, instead of a single one. The use of this extension fixes a long-standing design issue of OCSP, thus correlating the number of needed OCSP responses to the population of revoked certificates instead of the active certificates one. 
     " name="description">
 <meta content="xml2rfc 3.24.0" name="generator">
-<meta content="draft-pala-ocsp-range-queries-latest" name="ietf.draft">
+<meta content="draft-pala-ocsp-range-responses-latest" name="ietf.draft">
 <!-- Generator version information:
   xml2rfc 3.24.0
     Python 3.12.7
@@ -26,7 +27,7 @@
     setuptools 70.3.0
     wcwidth 0.2.13
 -->
-<link href="draft-pala-ocsp-range-queries.xml" rel="alternate" type="application/rfc+xml">
+<link href="draft-pala-ocsp-range-responses.xml" rel="alternate" type="application/rfc+xml">
 <link href="#copyright" rel="license">
 <style type="text/css">@font-face {
   font-family: 'Lora';
@@ -1075,7 +1076,7 @@ svg :is([fill="white"], [fill^="#fff"]) {
 <table class="ears">
 <thead><tr>
 <td class="left">Internet-Draft</td>
-<td class="center">OCSP Range Queries</td>
+<td class="center">OCSP Range Responses</td>
 <td class="right">November 2024</td>
 </tr></thead>
 <tfoot><tr>
@@ -1090,7 +1091,7 @@ svg :is([fill="white"], [fill^="#fff"]) {
 <dt class="label-workgroup">Workgroup:</dt>
 <dd class="workgroup">Network Working Group</dd>
 <dt class="label-internet-draft">Internet-Draft:</dt>
-<dd class="internet-draft">draft-pala-ocsp-range-queries-latest</dd>
+<dd class="internet-draft">draft-pala-ocsp-range-responses-latest</dd>
 <dt class="label-published">Published:</dt>
 <dd class="published">
 <time datetime="2024-11-04" class="published">4 November 2024</time>
@@ -1108,10 +1109,11 @@ svg :is([fill="white"], [fill^="#fff"]) {
 </dd>
 </dl>
 </div>
-<h1 id="title">Range Queries Extension for OCSP</h1>
+<h1 id="title">OCSP Range Extension</h1>
 <section id="section-abstract">
       <h2 id="abstract"><a href="#abstract" class="selfRef">Abstract</a></h2>
-<p id="section-abstract-1">The Online Certificate Status Protocol (OCSP) provides single-certificate-revocation status in real-time. However, the per-certificate lookup approach employed in OCSP has performance and scalability issues when faced with large population of active certificates. This document describes a new extension and associated processing rules for OCSP message to support optimized range-based responses. Specifically, when requested by the client, the returned response is modified to cover a range of certificates with the same status, instead of only the one requested, thus correlating the number of signed responses to the population of revoked certificates instead of the active certificates one.<a href="#section-abstract-1" class="pilcrow">¶</a></p>
+<p id="section-abstract-1">The Online Certificate Status Protocol (OCSP) provides single-certificate-revocation status, originally designed to be provided in real-time. However, the per-certificate lookup approach employed in OCSP has performance and scalability issues when faced with large population of active certificates and clients.<a href="#section-abstract-1" class="pilcrow">¶</a></p>
+<p id="section-abstract-2">This document describes a new extension and associated processing rules for OCSP messages that implement range-based responses. Specifically, the generated responses are modified to provide the status for a range of certificates, instead of a single one. The use of this extension fixes a long-standing design issue of OCSP, thus correlating the number of needed OCSP responses to the population of revoked certificates instead of the active certificates one.<a href="#section-abstract-2" class="pilcrow">¶</a></p>
 </section>
 <section class="note rfcEditorRemove" id="section-note.1">
       <h2 id="name-discussion-venues">
@@ -1170,7 +1172,7 @@ svg :is([fill="white"], [fill^="#fff"]) {
         </h2>
 <nav class="toc"><ul class="compact toc ulBare ulEmpty">
 <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.1">
-            <p id="section-toc.1-1.1.1" class="keepWithNext"><a href="#section-1" class="auto internal xref">1</a>.  <a href="#name-introduction" class="internal xref">Introduction</a></p>
+            <p id="section-toc.1-1.1.1" class="keepWithNext"><a href="#section-1" class="auto internal xref">1</a>.  <a href="#name-introduction-and-motivation" class="internal xref">Introduction and Motivation</a></p>
 <ul class="compact toc ulBare ulEmpty">
 <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.1.2.1">
                 <p id="section-toc.1-1.1.2.1.1" class="keepWithNext"><a href="#section-1.1" class="auto internal xref">1.1</a>.  <a href="#name-conventions-and-terminology" class="internal xref">Conventions and Terminology</a></p>
@@ -1178,7 +1180,7 @@ svg :is([fill="white"], [fill^="#fff"]) {
             </ul>
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.2">
-            <p id="section-toc.1-1.2.1"><a href="#section-2" class="auto internal xref">2</a>.  <a href="#name-ocsp-range-queries" class="internal xref">OCSP Range Queries</a></p>
+            <p id="section-toc.1-1.2.1"><a href="#section-2" class="auto internal xref">2</a>.  <a href="#name-ocsp-range-responses" class="internal xref">OCSP Range Responses</a></p>
 <ul class="compact toc ulBare ulEmpty">
 <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.2.2.1">
                 <p id="section-toc.1-1.2.2.1.1" class="keepWithNext"><a href="#section-2.1" class="auto internal xref">2.1</a>.  <a href="#name-the-ocsp-range-queries-exte" class="internal xref">The OCSP Range Queries Extension</a></p>
@@ -1189,39 +1191,39 @@ svg :is([fill="white"], [fill^="#fff"]) {
             </ul>
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.3">
-            <p id="section-toc.1-1.3.1"><a href="#section-3" class="auto internal xref">3</a>.  <a href="#name-ocsp-requests-and-responses" class="internal xref">OCSP Requests and Responses Processing</a></p>
+            <p id="section-toc.1-1.3.1"><a href="#section-3" class="auto internal xref">3</a>.  <a href="#name-security-considerations" class="internal xref">Security Considerations</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4">
+            <p id="section-toc.1-1.4.1"><a href="#section-4" class="auto internal xref">4</a>.  <a href="#name-iana-considerations" class="internal xref">IANA Considerations</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5">
+            <p id="section-toc.1-1.5.1"><a href="#section-5" class="auto internal xref">5</a>.  <a href="#name-normative-references" class="internal xref">Normative References</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6">
+            <p id="section-toc.1-1.6.1"><a href="#appendix-A" class="auto internal xref">Appendix A</a>.  <a href="#name-asn1-module" class="internal xref">ASN.1 Module</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7">
+            <p id="section-toc.1-1.7.1"><a href="#appendix-B" class="auto internal xref">Appendix B</a>.  <a href="#name-ocsp-requests-and-responses" class="internal xref">OCSP Requests and Responses Processing</a></p>
 <ul class="compact toc ulBare ulEmpty">
-<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.3.2.1">
-                <p id="section-toc.1-1.3.2.1.1"><a href="#section-3.1" class="auto internal xref">3.1</a>.  <a href="#name-processing-ocsp-requests" class="internal xref">Processing OCSP Requests</a></p>
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.1">
+                <p id="section-toc.1-1.7.2.1.1"><a href="#appendix-B.1" class="auto internal xref">B.1</a>.  <a href="#name-processing-ocsp-requests" class="internal xref">Processing OCSP Requests</a></p>
 </li>
-              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.3.2.2">
-                <p id="section-toc.1-1.3.2.2.1"><a href="#section-3.2" class="auto internal xref">3.2</a>.  <a href="#name-processing-ocsp-responses" class="internal xref">Processing OCSP Responses</a></p>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.2">
+                <p id="section-toc.1-1.7.2.2.1"><a href="#appendix-B.2" class="auto internal xref">B.2</a>.  <a href="#name-processing-ocsp-responses" class="internal xref">Processing OCSP Responses</a></p>
 </li>
-              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.3.2.3">
-                <p id="section-toc.1-1.3.2.3.1"><a href="#section-3.3" class="auto internal xref">3.3</a>.  <a href="#name-pre-computation-of-ocsp-res" class="internal xref">Pre-Computation of OCSP Responses</a></p>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.3">
+                <p id="section-toc.1-1.7.2.3.1"><a href="#appendix-B.3" class="auto internal xref">B.3</a>.  <a href="#name-pre-computation-of-ocsp-res" class="internal xref">Pre-Computation of OCSP Responses</a></p>
 </li>
             </ul>
 </li>
-          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4">
-            <p id="section-toc.1-1.4.1"><a href="#section-4" class="auto internal xref">4</a>.  <a href="#name-security-considerations" class="internal xref">Security Considerations</a></p>
-</li>
-          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5">
-            <p id="section-toc.1-1.5.1"><a href="#section-5" class="auto internal xref">5</a>.  <a href="#name-iana-considerations" class="internal xref">IANA Considerations</a></p>
-</li>
-          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6">
-            <p id="section-toc.1-1.6.1"><a href="#section-6" class="auto internal xref">6</a>.  <a href="#name-normative-references" class="internal xref">Normative References</a></p>
-</li>
-          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7">
-            <p id="section-toc.1-1.7.1"><a href="#appendix-A" class="auto internal xref">Appendix A</a>.  <a href="#name-asn1-module" class="internal xref">ASN.1 Module</a></p>
-</li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.8">
-            <p id="section-toc.1-1.8.1"><a href="#appendix-B" class="auto internal xref">Appendix B</a>.  <a href="#name-examples" class="internal xref">Examples</a></p>
+            <p id="section-toc.1-1.8.1"><a href="#appendix-C" class="auto internal xref">Appendix C</a>.  <a href="#name-examples" class="internal xref">Examples</a></p>
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.9">
-            <p id="section-toc.1-1.9.1"><a href="#appendix-C" class="auto internal xref"></a><a href="#name-acknowledgments" class="internal xref">Acknowledgments</a></p>
+            <p id="section-toc.1-1.9.1"><a href="#appendix-D" class="auto internal xref"></a><a href="#name-acknowledgments" class="internal xref">Acknowledgments</a></p>
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.10">
-            <p id="section-toc.1-1.10.1"><a href="#appendix-D" class="auto internal xref"></a><a href="#name-authors-address" class="internal xref">Author's Address</a></p>
+            <p id="section-toc.1-1.10.1"><a href="#appendix-E" class="auto internal xref"></a><a href="#name-authors-address" class="internal xref">Author's Address</a></p>
 </li>
         </ul>
 </nav>
@@ -1229,11 +1231,14 @@ svg :is([fill="white"], [fill^="#fff"]) {
 </div>
 <div id="intro">
 <section id="section-1">
-      <h2 id="name-introduction">
-<a href="#section-1" class="section-number selfRef">1. </a><a href="#name-introduction" class="section-name selfRef">Introduction</a>
+      <h2 id="name-introduction-and-motivation">
+<a href="#section-1" class="section-number selfRef">1. </a><a href="#name-introduction-and-motivation" class="section-name selfRef">Introduction and Motivation</a>
       </h2>
-<p id="section-1-1">The original design for the OCSP protocol was based on a live responder model where each query would be replied to with a freshly signed new response that could be cached for the duration of the response which it was meant to be a short period of time such as few minutes to few hours. This model was meant to provide real-time revocation status for a single certificate. However, the per-certificate lookup approach employed in OCSP has proven to have performance and scalability issues. This is particularly true when the number of certificates issued by the specific CA is very large and requests for status verification are clustered around a subset of the certificates. In other words, the current design of the OCSP protocol <span>[<a href="#RFC6960" class="cite xref">RFC6960</a>]</span> ties the number of possible responses that the OCSP responder must be able to produce is tied to the number of certificates issued, instead of the number of certificates revoked.<a href="#section-1-1" class="pilcrow">¶</a></p>
-<p id="section-1-2">To overcome the issue with responders' performances, certificate providers pre-compute all responses for the active certificates population and serve quite long-lived responses from CDNs, which is very expensive and an evident barrier to revocation status checking.<a href="#section-1-2" class="pilcrow">¶</a></p>
+<p id="section-1-1">The trust model used in PKIs is based on two main components: the certificate chain and the certificate's revocation status. The revocation status is carried in lists of certificates that have been revoked by the Certificate Authority (CA) before their expiration date, namely the CRL. Alternatively, especially for EE certificates, the use of OCSP responders provides a more efficient mechanism that addresses the issue of growing CRLs. The first version of the OCSP protocol was defined in <span>[<a href="#RFC2560" class="cite xref">RFC2560</a>]</span> and later updated in <span>[<a href="#RFC6960" class="cite xref">RFC6960</a>]</span>.<a href="#section-1-1" class="pilcrow">¶</a></p>
+<p id="section-1-2">The original design of the OCSP protocol was based on a live responder model where each query is replied to with a freshly signed new response that could be cached for the duration of the response's validity period. OCSP responses were originally meant to be short-lived (e.g., few minutes to few hours).<a href="#section-1-2" class="pilcrow">¶</a></p>
+<p id="section-1-3">This model has proven to have performance and scalability issues, especially for PKIs with large populations or for high-transactions systems. In fact, the current standard ties the number of responses to the number of issued certificates (i.e., one response for each valid certificates), instead of the number of revoked certificates.<a href="#section-1-3" class="pilcrow">¶</a></p>
+<p id="section-1-4">To overcome the issue with responders' performances, it is a common practice for certificate providers to pre-compute all responses for the active certificates population and serve quite long-lived responses from CDNs. This requires the pre-signing of large amount of responses and the need to leverage expensive services that pose an evident barrier to revocation status checking.<a href="#section-1-4" class="pilcrow">¶</a></p>
+<p id="section-1-5">This work provides an alternative approach that allows OCSP responders to provide only a handful of responses, thus removing the need for large CDN deployments or the need of shortening the lifetime of certificates.<a href="#section-1-5" class="pilcrow">¶</a></p>
 <div id="terminology">
 <section id="section-1.1">
         <h3 id="name-conventions-and-terminology">
@@ -1252,43 +1257,51 @@ appear in all capitals, as shown here.<a href="#section-1.1-1" class="pilcrow">�
           for the status of a certificate.<a href="#section-1.1-4" class="pilcrow">¶</a></p>
 <p id="section-1.1-5"><strong>OCSP</strong>:
           Online Certificate Status Protocol, version 1.<a href="#section-1.1-5" class="pilcrow">¶</a></p>
-<p id="section-1.1-6"><strong>OCSP Extension</strong>:
-          X.509 extension for OCSP requests or responses.<a href="#section-1.1-6" class="pilcrow">¶</a></p>
-<p id="section-1.1-7"><strong>CRL</strong>:
-          Certificate Revocation List.<a href="#section-1.1-7" class="pilcrow">¶</a></p>
-<p id="section-1.1-8"><strong>CA</strong>:
-          Certificate Authority.<a href="#section-1.1-8" class="pilcrow">¶</a></p>
-<p id="section-1.1-9"><strong>DER</strong>:
-          Distinguished Encoding Rules as defined in X.690.<a href="#section-1.1-9" class="pilcrow">¶</a></p>
-<p id="section-1.1-10"><strong>PKI</strong>:
-          Public Key Infrastructure, as defined in <span>[<a href="#RFC5280" class="cite xref">RFC5280</a>]</span>.<a href="#section-1.1-10" class="pilcrow">¶</a></p>
+<p id="section-1.1-6"><strong>OCSP Request</strong>:
+          An OCSP request message, defined in <span>[<a href="#RFC6960" class="cite xref">RFC6960</a>]</span>.<a href="#section-1.1-6" class="pilcrow">¶</a></p>
+<p id="section-1.1-7"><strong>OCSP Response</strong>:
+          An OCSP Response message, defined in <span>[<a href="#RFC6960" class="cite xref">RFC6960</a>]</span>.<a href="#section-1.1-7" class="pilcrow">¶</a></p>
+<p id="section-1.1-8"><strong>OCSP Extension</strong>:
+          X.509 extension for OCSP requests or responses.<a href="#section-1.1-8" class="pilcrow">¶</a></p>
+<p id="section-1.1-9"><strong>CRL</strong>:
+          Certificate Revocation List.<a href="#section-1.1-9" class="pilcrow">¶</a></p>
+<p id="section-1.1-10"><strong>CA</strong>:
+          Certificate Authority.<a href="#section-1.1-10" class="pilcrow">¶</a></p>
+<p id="section-1.1-11"><strong>DER</strong>:
+          Distinguished Encoding Rules as defined in X.690.<a href="#section-1.1-11" class="pilcrow">¶</a></p>
+<p id="section-1.1-12"><strong>PKI</strong>:
+          Public Key Infrastructure, as defined in <span>[<a href="#RFC5280" class="cite xref">RFC5280</a>]</span>.<a href="#section-1.1-12" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>
 </div>
-<div id="range-queries">
+<div id="range-responses">
 <section id="section-2">
-      <h2 id="name-ocsp-range-queries">
-<a href="#section-2" class="section-number selfRef">2. </a><a href="#name-ocsp-range-queries" class="section-name selfRef">OCSP Range Queries</a>
+      <h2 id="name-ocsp-range-responses">
+<a href="#section-2" class="section-number selfRef">2. </a><a href="#name-ocsp-range-responses" class="section-name selfRef">OCSP Range Responses</a>
       </h2>
-<p id="section-2-1">The OCSP Range Queries extension allows OCSP responders to provide only a handful of responses, thus removing the need for large CDN deployments or the need of shortening the lifetime of certificates.<a href="#section-2-1" class="pilcrow">¶</a></p>
-<p id="section-2-2">When the OCSP Range Query extension (i.e., <code>OCSPRangeQuery</code>) is provided in the OCSP request, the client indicates that they support range queries. In this case, if the responder does not provide support for range queries, the responder replies with a standard OCSP response that the client processes as usual.<a href="#section-2-2" class="pilcrow">¶</a></p>
-<p id="section-2-3">However, when the responder supports range queries, the responder <span class="bcp14">SHALL</span> reply with an OCSP response that carries the <code>OCSPRangeResponse</code> extension that specifies the range of certificates for which the response is valid.<a href="#section-2-3" class="pilcrow">¶</a></p>
-<p id="section-2-4">The serial number of the CertID is set to a well-know value that the client ignores when the <code>OCSPRangeResponse</code> extension is present in the response. The client will then use the <code>startCertID</code> and <code>endCertID</code> values to determine the range of certificates for which the response is valid.<a href="#section-2-4" class="pilcrow">¶</a></p>
-<p id="section-2-5">The <code>startCertID</code> and <code>endCertID</code> values are the first and last certificate serial numbers for which the response is valid (inclusive). The minimum value for the <code>startCertID</code> is zero (0). If the <code>endCertID</code> is not present, the value to use for the end of the range is <code>+Infinite</code> (meaning the largest value supported).<a href="#section-2-5" class="pilcrow">¶</a></p>
+<p id="section-2-1">This document describes a new extension for the OCSP protocol that allows OCSP responders to provide responses for ranges of serial numbers that share the same status. The extension is defined as the <code>OCSPRange</code> extension and is included in the OCSP response message when the client includes the <code>OCSPRangeResponses</code> extension in the OCSP request message. In case the responder does not provide support for range queries, the responder ignores the <code>OCSPRangeResponses</code> extension and replies with a standard OCSP response that the client processes as usual.<a href="#section-2-1" class="pilcrow">¶</a></p>
+<p id="section-2-2">When the responder supports range queries, instead, the responder <span class="bcp14">SHALL</span> reply with an OCSP response that carries the <code>OCSPRange</code> extension that specifies the range of certificates for which the response is valid. When range responses are used, the serial number of the CertID is set to a well-know value that the client ignores when the <code>OCSPRange</code> extension is present in the response. In that case, the client will then use the <code>startCertID</code> and <code>endCertID</code> values to check that the range set in the response covers the requested serial number.<a href="#section-2-2" class="pilcrow">¶</a></p>
+<p id="section-2-3">The <code>startCertID</code> and <code>endCertID</code> values are the first and last certificate serial numbers for which the response is valid (inclusive). The <code>startCertID</code> field is required and its minimum value is zero (0). The <code>endCertID</code> is an optional field and indicates the last serial number that the response is valid for. When the value is not present, the value to use for the end of the range is <code>+Infinite</code> (meaning the largest value supported).<a href="#section-2-3" class="pilcrow">¶</a></p>
 <div id="range-queries-extension">
 <section id="section-2.1">
         <h3 id="name-the-ocsp-range-queries-exte">
 <a href="#section-2.1" class="section-number selfRef">2.1. </a><a href="#name-the-ocsp-range-queries-exte" class="section-name selfRef">The OCSP Range Queries Extension</a>
         </h3>
-<p id="section-2.1-1">When an OCSP client supports OCSP range responses, the client <span class="bcp14">MUST</span> include the <code>OCSPRangeResponse</code> extension with the value set to <code>NULL</code>. OCSP clients that do not support range queries <span class="bcp14">SHALL NOT</span> include the <code>OCSPRangeResponse</code> extension. The extension is defined as follows:<a href="#section-2.1-1" class="pilcrow">¶</a></p>
+<p id="section-2.1-1">When an OCSP client supports OCSP range responses, the client <span class="bcp14">MUST</span> include the <code>OCSPRangeResponses</code> extension with the value set to <code>NULL</code>. OCSP clients that do not support range queries <span class="bcp14">SHALL NOT</span> include the <code>OCSPRangeResponses</code> extension.<a href="#section-2.1-1" class="pilcrow">¶</a></p>
+<p id="section-2.1-2">The extension is defined as follows:<a href="#section-2.1-2" class="pilcrow">¶</a></p>
 <span id="name-the-ocsp-range-response-ext"></span><div id="asn1-ocsp-range-response">
 <figure id="figure-1">
-          <div class="lang-ASN.1 sourcecode" id="section-2.1-2.1">
+          <div class="lang-ASN.1 sourcecode" id="section-2.1-3.1">
 <pre>
-   id-range-response OBJECT IDENTIFIER ::= { id-pkix-ocsp 10 }
+id-ocsp-range-responses OBJECT IDENTIFIER ::= {
+    iso(1) identified-organization(3) dod(6) internet(1) private(4)
+    enterprise(1) OpenCA(18227) Extensions(3) id2024(2024)
+    id-ocsp-range-responses(1) }
 
-   OCSPRangeResponse ::= NULL
+re-ocsp-range-responses EXTENSION ::= { SYNTAX NULL IDENTIFIED BY
+                                        id-ocsp-range-responses }
+
 </pre>
 </div>
 <figcaption><a href="#figure-1" class="selfRef">Figure 1</a>:
@@ -1302,25 +1315,32 @@ appear in all capitals, as shown here.<a href="#section-1.1-1" class="pilcrow">�
         <h3 id="name-the-ocsprange-extension">
 <a href="#section-2.2" class="section-number selfRef">2.2. </a><a href="#name-the-ocsprange-extension" class="section-name selfRef">The OCSPRange Extension</a>
         </h3>
-<p id="section-2.2-1">When an OCSP client includes the <code>OCSPRangeResponse</code> extension in the OCSP request message, the responder <span class="bcp14">MUST</span> include the <code>OCSPRange</code> extension in the OCSP response message. The <code>OCSPRange</code> extension allows a responder to indicate the range of responses for which the response is valid. The extension is defined as follows:<a href="#section-2.2-1" class="pilcrow">¶</a></p>
+<p id="section-2.2-1">When an OCSP client includes the <code>OCSPRangeResponses</code> extension in the OCSP request message, the responder <span class="bcp14">MUST</span> include the <code>OCSPRange</code> extension in the OCSP response message. The <code>OCSPRange</code> extension allows a responder to indicate the range of responses for which the response is valid. The extension is defined as follows:<a href="#section-2.2-1" class="pilcrow">¶</a></p>
 <span id="name-the-ocsp-range-extension-as"></span><div id="asn1-ocsp-range">
 <figure id="figure-2">
           <div class="lang-ASN.1 sourcecode" id="section-2.2-2.1">
 <pre>
-   id-ocsp-range-response OBJECT IDENTIFIER ::= { id-pkix-ocsp 11 }
+id-ocsp-range OBJECT IDENTIFIER ::= {
+    iso(1) identified-organization(3) dod(6) internet(1) private(4)
+    enterprise(1) OpenCA(18227) Extensions(3) id2024(2024)
+    id-ocsp-range(2) }
 
-   OCSPRange ::= SEQUENCE {
-       startCertID  [0]     INTEGER,
-            --- Beginning of the range of certificates
-            --- for which the response is valid. The
-            --- lowest value is 0.
+OCSPRange ::= SEQUENCE {
+    startCertID  [0]     INTEGER,
+        --- Beginning of the range of certificates
+        --- for which the response is valid. The
+        --- lowest value is 0.
 
-       endCertID    [1]     INTEGER OPTIONAL
-            --- End of the range of certificates for
-            --- which the response is valid. If the value
-            --- is not present, the default value to use
-            --- is +Infinite.
-   }
+    endCertID    [1]     INTEGER OPTIONAL
+        --- End of the range of certificates for
+        --- which the response is valid. If the value
+        --- is not present, the default value to use
+        --- is +Infinite.
+}
+
+re-ocsp-range EXTENSION ::= { SYNTAX OCSPRange
+                              IDENTIFIED BY id-ocsp-range }
+
 </pre>
 </div>
 <figcaption><a href="#figure-2" class="selfRef">Figure 2</a>:
@@ -1332,61 +1352,170 @@ appear in all capitals, as shown here.<a href="#section-1.1-1" class="pilcrow">�
 </div>
 </section>
 </div>
-<div id="sec-changes">
+<div id="sec-considerations">
 <section id="section-3">
-      <h2 id="name-ocsp-requests-and-responses">
-<a href="#section-3" class="section-number selfRef">3. </a><a href="#name-ocsp-requests-and-responses" class="section-name selfRef">OCSP Requests and Responses Processing</a>
+      <h2 id="name-security-considerations">
+<a href="#section-3" class="section-number selfRef">3. </a><a href="#name-security-considerations" class="section-name selfRef">Security Considerations</a>
       </h2>
-<p id="section-3-1">This section is meant to provide indications for implementers about how to properly process requests and responses that use the range queries extensions.<a href="#section-3-1" class="pilcrow">¶</a></p>
-<div id="sec-request">
-<section id="section-3.1">
-        <h3 id="name-processing-ocsp-requests">
-<a href="#section-3.1" class="section-number selfRef">3.1. </a><a href="#name-processing-ocsp-requests" class="section-name selfRef">Processing OCSP Requests</a>
-        </h3>
-<p id="section-3.1-1">When an OCSP client sends a request to an OCSP responder and includes the <code>OCSPRangeResponse</code> extension, the responder builds the response to bew sent to the client according to the following algorithm:<a href="#section-3.1-1" class="pilcrow">¶</a></p>
-<span id="name-ocsp-responder-processing-a"></span><div id="alg-ocsp-responder">
-<figure id="figure-3">
-          <div class="alignLeft art-text artwork" id="section-3.1-2.1">
+<p id="section-3-1">The OCSP Range extension modifies the OCSP protocol by providing a mechanism to reduce the number of responses that need to be generated by the responder. The extension does not introduce new security risks, but it changes the way the responses are generated and processed. The security considerations of the OCSP protocol and CRL processing are still valid and apply to the use of the OCSP Range extension.<a href="#section-3-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="iana-considerations">
+<section id="section-4">
+      <h2 id="name-iana-considerations">
+<a href="#section-4" class="section-number selfRef">4. </a><a href="#name-iana-considerations" class="section-name selfRef">IANA Considerations</a>
+      </h2>
+<p id="section-4-1">This document has no IANA actions.<a href="#section-4-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="sec-normative-references">
+<section id="section-5">
+      <h2 id="name-normative-references">
+<a href="#section-5" class="section-number selfRef">5. </a><a href="#name-normative-references" class="section-name selfRef">Normative References</a>
+      </h2>
+<dl class="references">
+<dt id="RFC2119">[RFC2119]</dt>
+      <dd>
+<span class="refAuthor">Bradner, S.</span>, <span class="refTitle">"Key words for use in RFCs to Indicate Requirement Levels"</span>, <span class="seriesInfo">BCP 14</span>, <span class="seriesInfo">RFC 2119</span>, <span class="seriesInfo">DOI 10.17487/RFC2119</span>, <time datetime="1997-03" class="refDate">March 1997</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc2119">https://www.rfc-editor.org/info/rfc2119</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC2560">[RFC2560]</dt>
+      <dd>
+<span class="refAuthor">Myers, M.</span>, <span class="refAuthor">Ankney, R.</span>, <span class="refAuthor">Malpani, A.</span>, <span class="refAuthor">Galperin, S.</span>, and <span class="refAuthor">C. Adams</span>, <span class="refTitle">"X.509 Internet Public Key Infrastructure Online Certificate Status Protocol - OCSP"</span>, <span class="seriesInfo">RFC 2560</span>, <span class="seriesInfo">DOI 10.17487/RFC2560</span>, <time datetime="1999-06" class="refDate">June 1999</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc2560">https://www.rfc-editor.org/info/rfc2560</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC5280">[RFC5280]</dt>
+      <dd>
+<span class="refAuthor">Cooper, D.</span>, <span class="refAuthor">Santesson, S.</span>, <span class="refAuthor">Farrell, S.</span>, <span class="refAuthor">Boeyen, S.</span>, <span class="refAuthor">Housley, R.</span>, and <span class="refAuthor">W. Polk</span>, <span class="refTitle">"Internet X.509 Public Key Infrastructure Certificate and Certificate Revocation List (CRL) Profile"</span>, <span class="seriesInfo">RFC 5280</span>, <span class="seriesInfo">DOI 10.17487/RFC5280</span>, <time datetime="2008-05" class="refDate">May 2008</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc5280">https://www.rfc-editor.org/info/rfc5280</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC6960">[RFC6960]</dt>
+      <dd>
+<span class="refAuthor">Santesson, S.</span>, <span class="refAuthor">Myers, M.</span>, <span class="refAuthor">Ankney, R.</span>, <span class="refAuthor">Malpani, A.</span>, <span class="refAuthor">Galperin, S.</span>, and <span class="refAuthor">C. Adams</span>, <span class="refTitle">"X.509 Internet Public Key Infrastructure Online Certificate Status Protocol - OCSP"</span>, <span class="seriesInfo">RFC 6960</span>, <span class="seriesInfo">DOI 10.17487/RFC6960</span>, <time datetime="2013-06" class="refDate">June 2013</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc6960">https://www.rfc-editor.org/info/rfc6960</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC8174">[RFC8174]</dt>
+    <dd>
+<span class="refAuthor">Leiba, B.</span>, <span class="refTitle">"Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words"</span>, <span class="seriesInfo">BCP 14</span>, <span class="seriesInfo">RFC 8174</span>, <span class="seriesInfo">DOI 10.17487/RFC8174</span>, <time datetime="2017-05" class="refDate">May 2017</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc8174">https://www.rfc-editor.org/info/rfc8174</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+</dl>
+</section>
+</div>
+<div id="asn1-module">
+<section id="appendix-A">
+      <h2 id="name-asn1-module">
+<a href="#appendix-A" class="section-number selfRef">Appendix A. </a><a href="#name-asn1-module" class="section-name selfRef">ASN.1 Module</a>
+      </h2>
+<div class="breakable lang-ASN.1 sourcecode" id="appendix-A-1">
 <pre>
-IF OCSPRangeResponse extension is present in the request THEN
-    IF OCSPRangeResponse extension is supported by the responder THEN
-        IF the requested serial number is not revoked THEN
-            Include the OCSPRange extension in the response
-            Set the startCertID and endCertID values in the OCSPRange extension
-        ELSE
-            Do not include the OCSPRange extension in the response
-            Send the standard OCSP response for the revoked certificate
+&lt;CODE STARTS&gt;
+
+OCSPRangeResponse-2024
+    { iso(1) identified-organization(3) dod(6) internet(1)
+      private(4) enterprise(1) OpenCA(18227) id-mod(2024)
+      id-mod-ocsp-range-response-2024(1) }
+
+DEFINITIONS IMPLICIT TAGS ::= BEGIN
+
+EXPORTS ALL;
+
+-- OCSP Range Response Extension
+
+re-ocsp-range-responses EXTENSION ::= { SYNTAX NULL IDENTIFIED BY
+                                        id-ocsp-range-responses }
+
+-- OCSP Range Extension
+
+OCSPRange ::= SEQUENCE {
+
+    startCertID  [0]     INTEGER,
+        --- Beginning of the range of certificates
+        --- for which the response is valid. The
+        --- lowest value is 0.
+
+    endCertID    [1]     INTEGER OPTIONAL
+        --- End of the range of certificates for
+        --- which the response is valid. If the value
+        --- is not present, the default value to use
+        --- is +Infinite.
+}
+
+re-ocsp-range EXTENSION ::= { SYNTAX OCSPRange
+                              IDENTIFIED BY id-ocsp-range }
+
+-- Object Identifiers
+
+id-ocsp-range-response OBJECT IDENTIFIER ::= {
+    iso(1) identified-organization(3) dod(6) internet(1) private(4)
+    enterprise(1) OpenCA(18227) Extensions(3) id2024(2024)
+    id-ocsp-range-response(1) }
+
+id-ocsp-range OBJECT IDENTIFIER ::= {
+    iso(1) identified-organization(3) dod(6) internet(1) private(4)
+    enterprise(1) OpenCA(18227) Extensions(3) id2024(2024)
+    id-ocsp-range(33) }
+
+END
+
+&lt;CODE ENDS&gt;
+</pre><a href="#appendix-A-1" class="pilcrow">¶</a>
+</div>
+</section>
+</div>
+<div id="back-ocsp-processing">
+<section id="appendix-B">
+      <h2 id="name-ocsp-requests-and-responses">
+<a href="#appendix-B" class="section-number selfRef">Appendix B. </a><a href="#name-ocsp-requests-and-responses" class="section-name selfRef">OCSP Requests and Responses Processing</a>
+      </h2>
+<p id="appendix-B-1">This section is meant to provide indications for implementers about how to properly process requests and responses that use the range queries extensions. The provisioned algorithms and examples are meant to provide guidance and are not normative.<a href="#appendix-B-1" class="pilcrow">¶</a></p>
+<div id="back-ocsp-requests-processing">
+<section id="appendix-B.1">
+        <h3 id="name-processing-ocsp-requests">
+<a href="#appendix-B.1" class="section-number selfRef">B.1. </a><a href="#name-processing-ocsp-requests" class="section-name selfRef">Processing OCSP Requests</a>
+        </h3>
+<p id="appendix-B.1-1">One of the advantages of using the <code>OCSPRange</code> extension is the ability to reduce the number of responses that need to be generated by the responder. For most CAs this translates in the possibility of pre-computing the responses for the ranges of certificates that share the same status (revoked or valid) and serve them directly from memory or cache.<a href="#appendix-B.1-1" class="pilcrow">¶</a></p>
+<p id="appendix-B.1-2">Here's an example for how to process OCSP requests that include the <code>OCSPRangeResponses</code> extension where we use two different functions to generate the responses: <code>GenerateOCSPResponse</code> and <code>GenerateOCSPRangeResponse</code>. The first function is used to generate the standard OCSP response, while the second function is used to generate the range response.<a href="#appendix-B.1-2" class="pilcrow">¶</a></p>
+<span id="name-ocsp-request-processing-alg"></span><div id="alg-ocsp-responder">
+<figure id="figure-3">
+          <div class="alignLeft art-text artwork" id="appendix-B.1-3.1">
+<pre>
+OCSPReq &lt;-- ReceiveOCSPRequest()
+
+IF OCSPRangeResponse in OCSPReq.extensions THEN
+    FOR idx in CachedResponses DO
+        IF OCSPReq.serialNumber in CachedResponses[idx].range AND
+                OCSPReq.validTo &lt;= now THEN
+            RETURN CachedResponses[idx]
         END IF
-    ELSE
-        Send the standard OCSP response for the revoked certificate
-    END IF
+    END FOR
+    OCSPResp &lt;-- GenerateOCSPRangeResponse(OCSPReq)
+    CachedResponses[OCSPReq.serialNumber] &lt;-- OCSPResp
+    RETURN OCSPResp
 ELSE
-    Send the standard OCSP response for the revoked certificate
+    OCSPResp &lt;-- GenerateOCSPResponse(OCSPReq)
+    RETURN OCSPResp
 END IF
 </pre>
 </div>
 <figcaption><a href="#figure-3" class="selfRef">Figure 3</a>:
-<a href="#name-ocsp-responder-processing-a" class="selfRef">OCSP Responder Processing Algorithm</a>
+<a href="#name-ocsp-request-processing-alg" class="selfRef">OCSP Request Processing Algorithm</a>
           </figcaption></figure>
 </div>
-<p id="section-3.1-3">When a responder does not support the <code>OCSPRangeResponse</code> extension, the responder <span class="bcp14">SHALL</span> ignore it and respond with a standard OCSP response that the client processes as usual.<a href="#section-3.1-3" class="pilcrow">¶</a></p>
+<p id="appendix-B.1-4">When a responder does not support the <code>OCSPRangeResponses</code> extension, the responder <span class="bcp14">SHALL</span> ignore it and respond with a standard OCSP response that the client processes as usual.<a href="#appendix-B.1-4" class="pilcrow">¶</a></p>
 </section>
 </div>
-<div id="sec-response">
-<section id="section-3.2">
+<div id="back-ocsp-responses-processing">
+<section id="appendix-B.2">
         <h3 id="name-processing-ocsp-responses">
-<a href="#section-3.2" class="section-number selfRef">3.2. </a><a href="#name-processing-ocsp-responses" class="section-name selfRef">Processing OCSP Responses</a>
+<a href="#appendix-B.2" class="section-number selfRef">B.2. </a><a href="#name-processing-ocsp-responses" class="section-name selfRef">Processing OCSP Responses</a>
         </h3>
-<p id="section-3.2-1">When an OCSP client receives a response from an OCSP responder, the client processes the response according to the following algorithm:<a href="#section-3.2-1" class="pilcrow">¶</a></p>
+<p id="appendix-B.2-1">When an OCSP client receives a response from an OCSP responder, if the client supports the use of OCSPRange extensions in OCSP responses, the client processes the response according to the following algorithm:<a href="#appendix-B.2-1" class="pilcrow">¶</a></p>
 <span id="name-ocsp-client-processing-algo"></span><div id="alg-ocsp-client">
 <figure id="figure-4">
-          <div class="alignLeft art-text artwork" id="section-3.2-2.1">
+          <div class="alignLeft art-text artwork" id="appendix-B.2-2.1">
 <pre>
 IF OCSPRange extension is present in the response THEN
 
-    1. Ignore the serial number used in the CertID and Use the startCertID
-       and endCertID values in the OCSPRange extension to determine if the
-       response is valid for the certificate in the request.
+    1. Ignore the serial number used in the CertID and Use the
+       startCertID and endCertID values in the OCSPRange extension
+       to determine if the response is valid for the certificate
+       in the request.
 
     2. Process the response as usual
 
@@ -1400,38 +1529,31 @@ END IF
 <a href="#name-ocsp-client-processing-algo" class="selfRef">OCSP Client Processing Algorithm</a>
           </figcaption></figure>
 </div>
+<p id="appendix-B.2-3">Notice that compliant clients <span class="bcp14">SHALL</span> process the OCSPRange extension even if they did not include the OCSPRangeResponses extension in the request. This is to allow the responder to provide range responses even when the client did not request them (e.g., OCSP stapling).<a href="#appendix-B.2-3" class="pilcrow">¶</a></p>
 </section>
 </div>
-<div id="sec-precompute">
-<section id="section-3.3">
+<div id="back-ocsp-precompute-responses">
+<section id="appendix-B.3">
         <h3 id="name-pre-computation-of-ocsp-res">
-<a href="#section-3.3" class="section-number selfRef">3.3. </a><a href="#name-pre-computation-of-ocsp-res" class="section-name selfRef">Pre-Computation of OCSP Responses</a>
+<a href="#appendix-B.3" class="section-number selfRef">B.3. </a><a href="#name-pre-computation-of-ocsp-res" class="section-name selfRef">Pre-Computation of OCSP Responses</a>
         </h3>
-<p id="section-3.3-1">To optimize the performance of the OCSP responder, the responder <span class="bcp14">MAY</span> pre-compute the responses for the ranges of active certificates population (one for each revoked certificate or range of revoked certificates plus one for each of valid certificates).<a href="#section-3.3-1" class="pilcrow">¶</a></p>
-<p id="section-3.3-2">For example, when the population of active certificates is 1,000,000 (1,000 of which are revoked), the responder, instead of pre-computing 1,000,000 responses, only pre-computes the responses for the ranges of certificates that share the same status (revoked or valid) according to the following algorithm:<a href="#section-3.3-2" class="pilcrow">¶</a></p>
+<p id="appendix-B.3-1">To optimize the performance of the OCSP responder, the responder <span class="bcp14">MAY</span> pre-compute the responses for the ranges of active certificates population and serve them directly from memory or cache. The number of pre-computed responses includes one for each revoked certificate or range of revoked certificates plus one for each of valid certificates. An example algorithm is provided for the implementers where the responder uses the <code>aCRL</code> to lookup the list of revoked certificates (sorted) and the <code>Responses</code> array to store the pre-computed responses (sorted).<a href="#appendix-B.3-1" class="pilcrow">¶</a></p>
 <span id="name-algorithm-for-pre-computati"></span><div id="alg-precompute">
 <figure id="figure-5">
-          <div class="alignLeft art-text artwork" id="section-3.3-3.1">
+          <div class="lang-code sourcecode" id="appendix-B.3-2.1">
 <pre>
-# Load the current CRL
-aCRL :== Load(CRL)
-
-# Sort the CRL by certificate serial number {R0, ..., RN}
-aCRL :== Sort(aCRL)
-
-# Initialize the variables
-aStatus :== VALID
-aRangeStart :== 0
-aRangeEnd :== 0
-idx :== 0
+aStatus :== VALID;
+aRangeStart :== 0;
+aRangeEnd :== 0;
+idx :== 0;
 
 # Process the CRL entries
-FOREACH aEntry in the aCRL DO
+FOR EACH aEntry in aCRL.entries DO
 
     # Check the status of the current range
     IF aStatus == VALID THEN
         # We are in a range of valid certificates
-        aRangeEnd :== aEntry - 1
+        aRangeEnd :== aEntry.serial - 1
         Responses(idx++) = Valid{aRangeStart, aRangeEnd}
 
         # Start for the next set of revoked certificates
@@ -1466,122 +1588,30 @@ FOREACH aEntry in the aCRL DO
 <a href="#name-algorithm-for-pre-computati" class="selfRef">Algorithm for Pre-Computation of OCSP Responses</a>
           </figcaption></figure>
 </div>
-<p id="section-3.3-4">For example, for a CA with an active population of 10,000,000 certificates and a revoked population of 1,000 certificates, the responder will generate one response for the range of serial numbers from 0 to the first revoked certificate, one response for each range of certificates with the same status (revoked or valid), and one response for the range of serial numbers from the last revoked certificate to the largest serial number supported (i.e., +Infinite). In case all 1,000 revocation entries are not contiguous, the responder will generate 1,002 responses instead of 10,000,000 responses.<a href="#section-3.3-4" class="pilcrow">¶</a></p>
-<p id="section-3.3-5">For high-performance OCSP responders, the pre-computation of responses for the ranges of certificates is a viable solution that can optimize the performances of responders: by reducing the number of responses that need to be generated, the responder can produce the responses in few seconds every few minutes/hours and directly serve them from memory or cache.<a href="#section-3.3-5" class="pilcrow">¶</a></p>
+<p id="appendix-B.3-3">For example, for a CA with an active population of 10,000,000 certificates and a revoked population of 1,000 certificates, the responder will generate one response for the range of serial numbers from 0 to the first revoked certificate, one response for each range of certificates with the same status (revoked or valid), and one response for the range of serial numbers from the last revoked certificate to the largest serial number supported (i.e., +Infinite). In case all 1,000 revocation entries are not contiguous, the responder will generate 1,002 responses instead of 10,000,000 responses.<a href="#appendix-B.3-3" class="pilcrow">¶</a></p>
+<p id="appendix-B.3-4">For high-performance OCSP responders, the pre-computation of responses for the ranges of certificates is a viable solution that can optimize the performances of responders: by reducing the number of responses that need to be generated, the responder can produce the responses in few seconds every few minutes/hours and directly serve them from memory or cache.<a href="#appendix-B.3-4" class="pilcrow">¶</a></p>
 </section>
-</div>
-</section>
-</div>
-<div id="sec-considerations">
-<section id="section-4">
-      <h2 id="name-security-considerations">
-<a href="#section-4" class="section-number selfRef">4. </a><a href="#name-security-considerations" class="section-name selfRef">Security Considerations</a>
-      </h2>
-<p id="section-4-1">The OCSP Range Queries extension does not introduce any new security considerations beyond those already present in the OCSP protocol.<a href="#section-4-1" class="pilcrow">¶</a></p>
-</section>
-</div>
-<div id="iana-considerations">
-<section id="section-5">
-      <h2 id="name-iana-considerations">
-<a href="#section-5" class="section-number selfRef">5. </a><a href="#name-iana-considerations" class="section-name selfRef">IANA Considerations</a>
-      </h2>
-<p id="section-5-1">This document has no IANA actions.<a href="#section-5-1" class="pilcrow">¶</a></p>
-</section>
-</div>
-<div id="sec-normative-references">
-<section id="section-6">
-      <h2 id="name-normative-references">
-<a href="#section-6" class="section-number selfRef">6. </a><a href="#name-normative-references" class="section-name selfRef">Normative References</a>
-      </h2>
-<dl class="references">
-<dt id="RFC2119">[RFC2119]</dt>
-      <dd>
-<span class="refAuthor">Bradner, S.</span>, <span class="refTitle">"Key words for use in RFCs to Indicate Requirement Levels"</span>, <span class="seriesInfo">BCP 14</span>, <span class="seriesInfo">RFC 2119</span>, <span class="seriesInfo">DOI 10.17487/RFC2119</span>, <time datetime="1997-03" class="refDate">March 1997</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc2119">https://www.rfc-editor.org/info/rfc2119</a>&gt;</span>. </dd>
-<dd class="break"></dd>
-<dt id="RFC5280">[RFC5280]</dt>
-      <dd>
-<span class="refAuthor">Cooper, D.</span>, <span class="refAuthor">Santesson, S.</span>, <span class="refAuthor">Farrell, S.</span>, <span class="refAuthor">Boeyen, S.</span>, <span class="refAuthor">Housley, R.</span>, and <span class="refAuthor">W. Polk</span>, <span class="refTitle">"Internet X.509 Public Key Infrastructure Certificate and Certificate Revocation List (CRL) Profile"</span>, <span class="seriesInfo">RFC 5280</span>, <span class="seriesInfo">DOI 10.17487/RFC5280</span>, <time datetime="2008-05" class="refDate">May 2008</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc5280">https://www.rfc-editor.org/info/rfc5280</a>&gt;</span>. </dd>
-<dd class="break"></dd>
-<dt id="RFC6960">[RFC6960]</dt>
-      <dd>
-<span class="refAuthor">Santesson, S.</span>, <span class="refAuthor">Myers, M.</span>, <span class="refAuthor">Ankney, R.</span>, <span class="refAuthor">Malpani, A.</span>, <span class="refAuthor">Galperin, S.</span>, and <span class="refAuthor">C. Adams</span>, <span class="refTitle">"X.509 Internet Public Key Infrastructure Online Certificate Status Protocol - OCSP"</span>, <span class="seriesInfo">RFC 6960</span>, <span class="seriesInfo">DOI 10.17487/RFC6960</span>, <time datetime="2013-06" class="refDate">June 2013</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc6960">https://www.rfc-editor.org/info/rfc6960</a>&gt;</span>. </dd>
-<dd class="break"></dd>
-<dt id="RFC8174">[RFC8174]</dt>
-    <dd>
-<span class="refAuthor">Leiba, B.</span>, <span class="refTitle">"Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words"</span>, <span class="seriesInfo">BCP 14</span>, <span class="seriesInfo">RFC 8174</span>, <span class="seriesInfo">DOI 10.17487/RFC8174</span>, <time datetime="2017-05" class="refDate">May 2017</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc8174">https://www.rfc-editor.org/info/rfc8174</a>&gt;</span>. </dd>
-<dd class="break"></dd>
-</dl>
-</section>
-</div>
-<div id="asn1-module">
-<section id="appendix-A">
-      <h2 id="name-asn1-module">
-<a href="#appendix-A" class="section-number selfRef">Appendix A. </a><a href="#name-asn1-module" class="section-name selfRef">ASN.1 Module</a>
-      </h2>
-<div class="lang-ASN.1 sourcecode" id="appendix-A-1">
-<pre>
-OCSPRangeResponseExtension-2009
-    {iso(1) identified-organization(3) dod(6) internet(1) security(5)
-    mechanisms(5) pkix(7) id-mod(0) id-mod-ocsp-range-response-2009(10)}
-
-DEFINITIONS IMPLICIT TAGS ::=
-BEGIN
-
--- EXPORTS All --
-
-IMPORTS
-    FROM PKIX1Explicit88 { iso(1) identified-organization(3) dod(6)
-        internet(1) security(5) mechanisms(5) pkix(7) id-mod(0)
-        id-pkix1-explicit-88(1) };
-
-    id-pkix-ocsp OBJECT IDENTIFIER ::= { iso(1) identified-organization(3)
-        dod(6) internet(1) security(5) mechanisms(5) pkix(7) id-mod(0)
-        id-pkix1-explicit-88(1) 1 }
-
--- OCSP Range Response Extension
-
-id-pkix-ocsp-range-response OBJECT IDENTIFIER ::= { id-pkix-ocsp 10 }
-id-ocsp-range-response OBJECT IDENTIFIER ::= { id-pkix-ocsp 11 }
-
-OCSPRangeResponse ::= NULL
-
-OCSPRange ::= SEQUENCE {
-    startCertID  [0]     INTEGER OPTIONAL,
-                            --- Beginning of the range of certificates
-                            --- for which the response is valid. If the
-                            --- value is not present, the default value
-                            --- to use is 0.
-
-    endCertID    [1]     INTEGER OPTIONAL
-                            --- End of the range of certificates for
-                            --- which the response is valid. If the value
-                            --- is not present, the default value to use
-                            --- is +Infinite.
-}
-
-END
-</pre><a href="#appendix-A-1" class="pilcrow">¶</a>
 </div>
 </section>
 </div>
 <div id="examples">
-<section id="appendix-B">
+<section id="appendix-C">
       <h2 id="name-examples">
-<a href="#appendix-B" class="section-number selfRef">Appendix B. </a><a href="#name-examples" class="section-name selfRef">Examples</a>
+<a href="#appendix-C" class="section-number selfRef">Appendix C. </a><a href="#name-examples" class="section-name selfRef">Examples</a>
       </h2>
-<p id="appendix-B-1">TODO examples.<a href="#appendix-B-1" class="pilcrow">¶</a></p>
+<p id="appendix-C-1">TODO examples.<a href="#appendix-C-1" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="acknowledgments">
-<section id="appendix-C">
+<section id="appendix-D">
       <h2 id="name-acknowledgments">
 <a href="#name-acknowledgments" class="section-name selfRef">Acknowledgments</a>
       </h2>
-<p id="appendix-C-1">TODO acknowledge.<a href="#appendix-C-1" class="pilcrow">¶</a></p>
+<p id="appendix-D-1">TODO acknowledge.<a href="#appendix-D-1" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="authors-addresses">
-<section id="appendix-D">
+<section id="appendix-E">
       <h2 id="name-authors-address">
 <a href="#name-authors-address" class="section-name selfRef">Author's Address</a>
       </h2>
